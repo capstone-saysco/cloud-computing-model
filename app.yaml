@@ -1,2 +1,9 @@
+entrypoint: "gunicorn -b :$PORT main:app"
 runtime: python39
 service: predict-backend
+instance_class: B4
+manual_scaling:
+  instances: 1
+handlers:
+  - url: /.*
+    script: auto

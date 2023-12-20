@@ -9,6 +9,7 @@ from keras import backend as K
 from keras.models import load_model
 import re
 import nltk
+nltk.download('punkt')
 import pickle
 
 class ZeroMaskedEntries(Layer):

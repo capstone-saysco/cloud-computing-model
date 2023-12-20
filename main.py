@@ -1,19 +1,7 @@
 from flask import Flask, request, Response
-from flask_mysqldb import MySQL
 from predict import make_prediction
-from dotenv import load_dotenv
 import json
-import os
-
-load_dotenv()
 app = Flask(__name__)
-
-app.config['MYSQL_USER'] = os.getenv('DB_USER')
-app.config['MYSQL_DB'] = os.getenv('DB_NAME')
-app.config['MYSQL_PASSWORD'] = os.getenv('DB_PASSWORDR')
-app.config['MYSQL_HOST'] = os.getenv('DB_HOST')
-
-mysql = MySQL(app)
 
 @app.route("/saysco-api/predict-score", methods=["GET"])
 def wrong_method():
@@ -32,11 +20,6 @@ def predict():
         
         raw_score = make_prediction([answer])
         score = int(round(raw_score[0][0]*100))
-
-        cursor = mysql.connection.cursor()
-        cursor.execute("UPDATE student_answer SET score = %s WHERE student_answer.id = %s", (score, answer_id))
-        mysql.connection.commit()
-        cursor.close()
         
         status = 200
         data = {
