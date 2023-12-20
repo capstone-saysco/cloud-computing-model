@@ -1,17 +1,19 @@
 from flask import Flask, request, Response
 from flask_mysqldb import MySQL
-import pymysql
+from predict import make_prediction
+from dotenv import load_dotenv
 import json
+import os
 
-mysql =MySQL()
+load_dotenv()
 app = Flask(__name__)
 
-app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_DB'] = 'saysco_db'
-app.config['MYSQL_DATABASE_PASSWORD'] = ''
-app.config['MYSQL_DATABASE_HOST'] = 'localhost'
+app.config['MYSQL_USER'] = os.getenv('DB_USER')
+app.config['MYSQL_DB'] = os.getenv('DB_NAME')
+app.config['MYSQL_PASSWORD'] = os.getenv('DB_PASSWORDR')
+app.config['MYSQL_HOST'] = os.getenv('DB_HOST')
 
-mysql.init_app(app)
+mysql = MySQL(app)
 
 @app.route("/saysco-api/predict-score", methods=["GET"])
 def wrong_method():
@@ -24,39 +26,32 @@ def wrong_method():
 def predict():
     output = ''
     status = ''
-    
-    if request.form == None:
-        status = 400
-        output = {
-            'message': "Invalid data",
-            'data': request.form
-        }
-
-    else:
+    try:
         answer_id = request.form['answer_id']
-        question = request.form['question']
-        key_answer = request.form['key_answer']
         answer = request.form['answer']
         
-        # TODO: do the analysis here
-        
-        score = 00
-        conn = mysql.connect()
-        cur = conn.cursor(pymysql.cursors.DictCursor)
-        cur.execute("UPDATE student_answer SET score = %s WHERE student_answer.id = %s", (score, answer_id))
-        conn.commit()
+        raw_score = make_prediction([answer])
+        score = int(round(raw_score[0][0]*100))
+
+        cursor = mysql.connection.cursor()
+        cursor.execute("UPDATE student_answer SET score = %s WHERE student_answer.id = %s", (score, answer_id))
+        mysql.connection.commit()
+        cursor.close()
         
         status = 200
         data = {
             'id': answer_id,
-            'question': question,
-            'key_answer': key_answer,
-            'answer': answer,
             'score_result': score
             }
         output = {
-            'message': "Data processed, get the detailed essay via show API.",
+            'message': "Data processed, get the detailed data via show API.",
             'data': data
             }
+
+    except Exception as error:
+        status = 500
+        output = {
+            'message': str(error)
+        }
         
     return Response(json.dumps(output), status=status, mimetype='application/json')

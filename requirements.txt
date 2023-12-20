@@ -1,1 +1,5 @@
 Flask==3.0.0
+tensorflow==2.15.0
+numpy==1.26.2
+nltk==3.8.1
+python-dotenv==1.0.0
