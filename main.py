@@ -3,6 +3,13 @@ from predict import make_prediction
 import json
 app = Flask(__name__)
 
+@app.route("/", methods=["GET"])
+def welcome():
+    output = {
+        'message': "Response success!"
+    }
+    return Response(json.dumps(output), status=200, mimetype='application/json')
+
 @app.route("/saysco-api/predict-score", methods=["GET"])
 def wrong_method():
     output = {
